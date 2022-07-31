@@ -189,39 +189,6 @@ resource "aws_security_group_rule" "node" {
   )
 }
 
-################################################################################
-# Fargate Profile
-################################################################################
-
-module "fargate_profile" {
-  source = "./modules/fargate-profile"
-
-  for_each = { for k, v in var.fargate_profiles : k => v if var.create }
-
-  create = try(each.value.create, true)
-
-  # Fargate Profile
-  cluster_name      = aws_eks_cluster.this[0].name
-  cluster_ip_family = var.cluster_ip_family
-  name              = try(each.value.name, each.key)
-  subnet_ids        = try(each.value.subnet_ids, var.fargate_profile_defaults.subnet_ids, var.subnet_ids)
-  selectors         = try(each.value.selectors, var.fargate_profile_defaults.selectors, [])
-  timeouts          = try(each.value.timeouts, var.fargate_profile_defaults.timeouts, {})
-
-  # IAM role
-  create_iam_role               = try(each.value.create_iam_role, var.fargate_profile_defaults.create_iam_role, true)
-  iam_role_arn                  = try(each.value.iam_role_arn, var.fargate_profile_defaults.iam_role_arn, null)
-  iam_role_name                 = try(each.value.iam_role_name, var.fargate_profile_defaults.iam_role_name, null)
-  iam_role_use_name_prefix      = try(each.value.iam_role_use_name_prefix, var.fargate_profile_defaults.iam_role_use_name_prefix, true)
-  iam_role_path                 = try(each.value.iam_role_path, var.fargate_profile_defaults.iam_role_path, null)
-  iam_role_description          = try(each.value.iam_role_description, var.fargate_profile_defaults.iam_role_description, "Fargate profile IAM role")
-  iam_role_permissions_boundary = try(each.value.iam_role_permissions_boundary, var.fargate_profile_defaults.iam_role_permissions_boundary, null)
-  iam_role_tags                 = try(each.value.iam_role_tags, var.fargate_profile_defaults.iam_role_tags, {})
-  iam_role_attach_cni_policy    = try(each.value.iam_role_attach_cni_policy, var.fargate_profile_defaults.iam_role_attach_cni_policy, true)
-  iam_role_additional_policies  = try(each.value.iam_role_additional_policies, var.fargate_profile_defaults.iam_role_additional_policies, [])
-
-  tags = merge(var.tags, try(each.value.tags, var.fargate_profile_defaults.tags, {}))
-}
 
 ################################################################################
 # EKS Managed Node Group
